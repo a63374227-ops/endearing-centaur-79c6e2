@@ -44,7 +44,7 @@ The bot registers four global slash commands when it becomes ready:
 - `/about`: Shows bot/library information.
 - `/server`: Shows the current server member count and creation date.
 
-The bot uses only the `Guilds` gateway intent. It validates that `process.env.TOKEN` exists before starting, reports login and command-registration failures, and sends a private fallback error when command handling fails after an interaction has started.
+The bot uses only the `Guilds` gateway intent. It validates that `process.env.TOKEN` exists before starting, reports login and command-registration failures, sends a private fallback error when command handling fails after an interaction has started, and logs unhandled promise rejections, uncaught exceptions, Discord client errors, and shard errors. An uncaught exception schedules process exit after one second so a process manager or host can restart the bot.
 
 ## How Files Interact
 
@@ -53,7 +53,8 @@ The bot uses only the `Guilds` gateway intent. It validates that `process.env.TO
 3. `index.js` creates a Discord client with the `Guilds` intent.
 4. On the `ClientReady` event, the bot uses Discord REST endpoints to register the four global commands for the application.
 5. On `InteractionCreate`, the bot identifies the command and sends the appropriate text or embed response.
-6. `package-lock.json` and npm rebuild `node_modules/` when dependencies are installed.
+6. Process and Discord client error listeners log runtime failures; uncaught exceptions exit after a short delay.
+7. `package-lock.json` and npm rebuild `node_modules/` when dependencies are installed.
 
 ## How to Run
 
@@ -81,7 +82,7 @@ The local `.env` must provide a valid `TOKEN` before the bot can log in. Never c
 - There is no persistent database, configuration schema, logging service, or test suite.
 - The command set is defined in one file, so larger feature additions will make `index.js` harder to maintain.
 - `/server` is useful only inside a Discord server and does not provide detailed moderation or permission checks.
-- The bot does not include automatic retries, graceful shutdown handling, or deployment configuration.
+- The bot does not include automatic retries, graceful shutdown handling, or deployment configuration. The uncaught-exception delay only gives an external process manager a restart opportunity; it is not a complete shutdown strategy.
 
 ## Future Features
 

@@ -120,7 +120,33 @@ client.on(Events.InteractionCreate, async interaction => {
   }
 });
 
-client.login(token).catch(error => {
-  console.error('Failed to log in:', error.message);
-  process.exitCode = 1;
+process.on("unhandledRejection", (error) => {
+  console.error("❌ Unhandled Rejection:", error);
+});
+
+process.on("uncaughtException", (error) => {
+  console.error("❌ Uncaught Exception:", error);
+
+  // Give the process manager/host a chance to restart the bot
+  setTimeout(() => {
+    process.exit(1);
+  }, 1000);
+});
+
+client.on("error", (error) => {
+  console.error("❌ Discord Client Error:", error);
+});
+
+client.on("shardError", (error) => {
+  console.error("❌ Discord Shard Error:", error);
+});
+
+if (!process.env.TOKEN) {
+  console.error("❌ TOKEN is missing!");
+  process.exit(1);
+}
+
+client.login(process.env.TOKEN).catch((error) => {
+  console.error("❌ Login failed:", error);
+  process.exit(1);
 });
